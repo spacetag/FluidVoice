@@ -48,13 +48,24 @@ final class ZoomMuteService {
     nonisolated private static let muteTitle = "mute audio"
     nonisolated private static let unmuteTitle = "unmute audio"
 
+    /// Waits for Zoom's menu title to catch up; it lags the real state by up to ~1s.
+    nonisolated private static func waitForTitle(_ wanted: String, seconds: Double) async -> Bool {
+        for _ in 0..<Int(seconds * 10) {
+            if currentItem().1 == wanted { return true }
+            try? await Task.sleep(nanoseconds: 100_000_000)
+        }
+        return false
+    }
+
     /// True only when this call muted Zoom (so the caller owns the unmute).
     nonisolated private static func mute() async -> Bool {
         for _ in 0..<10 {
             switch currentItem() {
             case let (item?, title?) where title == muteTitle:
                 guard press(item) else { break }
-                log("muted")
+                // Confirm before returning so the release never reads a stale title.
+                let confirmed = await waitForTitle(unmuteTitle, seconds: 3)
+                log(confirmed ? "muted" : "muted (title unconfirmed)")
                 return true
             case (_?, let title?) where title == unmuteTitle:
                 log("already muted by user; leaving as is")
@@ -69,21 +80,23 @@ final class ZoomMuteService {
     }
 
     /// True once Zoom reports unmuted again (or the user already unmuted).
+    /// The menu item is a toggle, so press once and wait; pressing again while the
+    /// title is stale would re-mute.
     nonisolated private static func unmute() async -> Bool {
-        var presses = 0
-        for _ in 0..<25 {
-            if case let (item?, title?) = currentItem() {
-                if title == muteTitle {
-                    log(presses > 0 ? "unmuted" : "already unmuted by user")
-                    return true
-                }
-                if title == unmuteTitle, presses < 4 {
-                    if press(item) { presses += 1 }
-                    try? await Task.sleep(nanoseconds: 250_000_000) // let Zoom update its title
-                    continue
-                }
+        for attempt in 1...2 {
+            guard case let (item?, title?) = currentItem() else {
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                continue
             }
-            try? await Task.sleep(nanoseconds: 100_000_000)
+            if title == muteTitle {
+                log(attempt == 1 ? "already unmuted by user" : "unmuted")
+                return true
+            }
+            guard press(item) else { continue }
+            if await waitForTitle(muteTitle, seconds: 3) {
+                log("unmuted")
+                return true
+            }
         }
         log("unmute FAILED; will retry on next release")
         return false
