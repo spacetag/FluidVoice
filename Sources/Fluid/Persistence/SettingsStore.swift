@@ -5204,6 +5204,15 @@ final class SettingsStore: ObservableObject {
         }
     }
 
+    /// Mutes the Zoom microphone while the dictation key is held.
+    var muteZoomDuringDictation: Bool {
+        get { self.defaults.object(forKey: Keys.muteZoomDuringDictation) as? Bool ?? false }
+        set {
+            objectWillChange.send()
+            self.defaults.set(newValue, forKey: Keys.muteZoomDuringDictation)
+        }
+    }
+
     // MARK: - Custom Dictionary
 
     /// A custom dictionary entry that maps multiple misheard/alternate spellings to a correct replacement.
@@ -6275,6 +6284,7 @@ private extension SettingsStore {
 
         /// Media Playback Control
         static let pauseMediaDuringTranscription = "PauseMediaDuringTranscription"
+        static let muteZoomDuringDictation = "MuteZoomDuringDictation"
 
         /// Custom Dictation Prompt
         static let customDictationPrompt = "CustomDictationPrompt"

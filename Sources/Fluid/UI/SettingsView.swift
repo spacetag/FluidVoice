@@ -849,6 +849,17 @@ struct SettingsView: View {
                                         .settingsSearchTarget(.pauseMedia)
                                         Divider().opacity(0.2)
 
+                                        self.optionToggleRow(
+                                            title: "Mute Zoom Mic While Dictating",
+                                            description: "Mutes your Zoom microphone while the dictation key is held and unmutes on release, only if FluidVoice muted it. Needs Accessibility permission.",
+                                            isOn: Binding(
+                                                get: { SettingsStore.shared.muteZoomDuringDictation },
+                                                set: { SettingsStore.shared.muteZoomDuringDictation = $0 }
+                                            )
+                                        )
+                                        .settingsSearchTarget(.muteZoom)
+                                        Divider().opacity(0.2)
+
                                         DictionarySuggestionsSettingsRow()
                                             .settingsSearchTarget(.dictionarySuggestions)
                                         Divider().opacity(0.2)

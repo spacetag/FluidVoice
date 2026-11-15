@@ -41,6 +41,7 @@ enum SettingsSearchTarget: Hashable {
     case usageStreak
     case skipSilentRecordings
     case pauseMedia
+    case muteZoom
     case dictionarySuggestions
     case accessibilityPermission
     case textFormatting
@@ -103,6 +104,7 @@ enum SettingsSearchTarget: Hashable {
              .usageStreak,
              .skipSilentRecordings,
              .pauseMedia,
+             .muteZoom,
              .dictionarySuggestions,
              .accessibilityPermission:
             return .dictation
@@ -210,6 +212,7 @@ struct SettingsSearchAvailability {
              .usageStreak,
              .skipSilentRecordings,
              .pauseMedia,
+             .muteZoom,
              .dictionarySuggestions,
              .analyticsPrivacy:
             return self.accessibilityEnabled
@@ -343,6 +346,11 @@ enum SettingsSearchIndex {
             target: .pauseMedia,
             title: "Pause Media During Transcription",
             terms: ["resume music audio video playback recording"]
+        ),
+        .init(
+            target: .muteZoom,
+            title: "Mute Zoom Mic While Dictating",
+            terms: ["zoom mute microphone mic call meeting unmute"]
         ),
         .init(
             target: .dictionarySuggestions,
