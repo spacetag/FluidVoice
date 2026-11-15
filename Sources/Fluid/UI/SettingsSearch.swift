@@ -41,6 +41,7 @@ enum SettingsSearchTarget: Hashable {
     case usageStreak
     case skipSilentRecordings
     case pauseMedia
+    case duckVolume
     case dictionarySuggestions
     case accessibilityPermission
     case textFormatting
@@ -103,6 +104,7 @@ enum SettingsSearchTarget: Hashable {
              .usageStreak,
              .skipSilentRecordings,
              .pauseMedia,
+             .duckVolume,
              .dictionarySuggestions,
              .accessibilityPermission:
             return .dictation
@@ -210,6 +212,7 @@ struct SettingsSearchAvailability {
              .usageStreak,
              .skipSilentRecordings,
              .pauseMedia,
+             .duckVolume,
              .dictionarySuggestions,
              .analyticsPrivacy:
             return self.accessibilityEnabled
@@ -343,6 +346,11 @@ enum SettingsSearchIndex {
             target: .pauseMedia,
             title: "Pause Media During Transcription",
             terms: ["resume music audio video playback recording"]
+        ),
+        .init(
+            target: .duckVolume,
+            title: "Duck Volume While Dictating",
+            terms: ["duck ducking lower quieter reduce system output volume audio music hold key"]
         ),
         .init(
             target: .dictionarySuggestions,

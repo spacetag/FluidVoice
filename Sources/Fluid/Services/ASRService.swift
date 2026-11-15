@@ -1133,6 +1133,7 @@ final class ASRService: ObservableObject {
         self.isTerminating = true
         // Give media restoration the same quit window as audio cleanup.
         self.mediaPlaybackService.beginShutdown()
+        VolumeDuckingService.shared.recordingStopped()
         if self.isStarting, self.isRunning == false {
             await self.cancelPendingAudioCaptureStart(reason: "app_termination")
         }
@@ -2935,6 +2936,10 @@ final class ASRService: ObservableObject {
             sessionID: captureSessionID,
             enabled: SettingsStore.shared.pauseMediaDuringTranscription
         )
+        VolumeDuckingService.shared.recordingStarted(
+            enabled: SettingsStore.shared.duckVolumeDuringDictation,
+            level: SettingsStore.shared.duckVolumeLevel
+        )
         self.audioCaptureAttemptID &+= 1
         var readinessAttemptID = self.audioCaptureAttemptID
         self.audioCaptureReadinessGate.arm(
@@ -3190,6 +3195,7 @@ final class ASRService: ObservableObject {
             return .started
         } catch {
             self.mediaPlaybackService.sessionFinished(sessionID: captureSessionID)
+            VolumeDuckingService.shared.recordingStopped()
             self.releaseDictationActivityIfNeeded()
             await self.audioCaptureReadinessGate.cancel(
                 sessionID: captureSessionID,
@@ -3348,6 +3354,7 @@ final class ASRService: ObservableObject {
         if let sessionID = self.pendingMediaCaptureSessionID {
             self.mediaPlaybackService.sessionFinished(sessionID: sessionID)
         }
+        VolumeDuckingService.shared.recordingStopped()
         // A start waiting for the previous session's PCM handoff must wake to
         // observe the generation change; the old stop keeps ownership of the gate.
         self.recordingBufferHandoffGate.releasePendingWaiters()
@@ -3540,6 +3547,7 @@ final class ASRService: ObservableObject {
             return ""
         }
         self.mediaPlaybackService.recordingStopped(sessionID: stoppingSessionID)
+        VolumeDuckingService.shared.recordingStopped()
         defer { self.mediaPlaybackService.sessionFinished(sessionID: stoppingSessionID) }
         self.isStoppingFinalTranscription = true
         var completedBufferHandoff = false
@@ -4431,6 +4439,7 @@ final class ASRService: ObservableObject {
         let stoppingSessionID = self.benchmarkSessionID
         guard let bufferHandoffToken = self.recordingBufferHandoffGate.begin() else { return }
         self.mediaPlaybackService.recordingStopped(sessionID: stoppingSessionID)
+        VolumeDuckingService.shared.recordingStopped()
         defer { self.mediaPlaybackService.sessionFinished(sessionID: stoppingSessionID) }
         var completedBufferHandoff = false
         defer {

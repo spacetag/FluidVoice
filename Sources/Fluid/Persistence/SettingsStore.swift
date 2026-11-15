@@ -5204,6 +5204,24 @@ final class SettingsStore: ObservableObject {
         }
     }
 
+    /// Lowers system output volume while the dictation key is held; restores on release.
+    var duckVolumeDuringDictation: Bool {
+        get { self.defaults.object(forKey: Keys.duckVolumeDuringDictation) as? Bool ?? false }
+        set {
+            objectWillChange.send()
+            self.defaults.set(newValue, forKey: Keys.duckVolumeDuringDictation)
+        }
+    }
+
+    /// Fraction of current volume to keep while ducked (0.0–1.0).
+    var duckVolumeLevel: Double {
+        get { self.defaults.object(forKey: Keys.duckVolumeLevel) as? Double ?? 0.2 }
+        set {
+            objectWillChange.send()
+            self.defaults.set(min(max(newValue, 0), 1), forKey: Keys.duckVolumeLevel)
+        }
+    }
+
     // MARK: - Custom Dictionary
 
     /// A custom dictionary entry that maps multiple misheard/alternate spellings to a correct replacement.
@@ -6275,6 +6293,8 @@ private extension SettingsStore {
 
         /// Media Playback Control
         static let pauseMediaDuringTranscription = "PauseMediaDuringTranscription"
+        static let duckVolumeDuringDictation = "DuckVolumeDuringDictation"
+        static let duckVolumeLevel = "DuckVolumeLevel"
 
         /// Custom Dictation Prompt
         static let customDictationPrompt = "CustomDictationPrompt"

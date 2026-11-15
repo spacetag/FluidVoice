@@ -849,6 +849,30 @@ struct SettingsView: View {
                                         .settingsSearchTarget(.pauseMedia)
                                         Divider().opacity(0.2)
 
+                                        self.optionToggleRow(
+                                            title: "Duck Volume While Dictating",
+                                            description: "Lower system output volume while the dictation key is held, then restore it on release. Skips restore if you changed the volume yourself.",
+                                            isOn: Binding(
+                                                get: { SettingsStore.shared.duckVolumeDuringDictation },
+                                                set: { SettingsStore.shared.duckVolumeDuringDictation = $0 }
+                                            )
+                                        )
+                                        .settingsSearchTarget(.duckVolume)
+                                        if SettingsStore.shared.duckVolumeDuringDictation {
+                                            HStack {
+                                                Text("Ducked level: \(Int(SettingsStore.shared.duckVolumeLevel * 100))% of current")
+                                                    .font(.caption)
+                                                Slider(
+                                                    value: Binding(
+                                                        get: { SettingsStore.shared.duckVolumeLevel },
+                                                        set: { SettingsStore.shared.duckVolumeLevel = $0 }
+                                                    ),
+                                                    in: 0...0.8
+                                                )
+                                            }
+                                        }
+                                        Divider().opacity(0.2)
+
                                         DictionarySuggestionsSettingsRow()
                                             .settingsSearchTarget(.dictionarySuggestions)
                                         Divider().opacity(0.2)
