@@ -3,8 +3,8 @@ import ApplicationServices
 import Foundation
 
 /// Mutes the user's Zoom microphone while the dictation key is held by pressing
-/// Zoom's own "Mute Audio" menu item through Accessibility, then presses
-/// "Unmute Audio" on release — but only if this service did the muting.
+/// Zoom's own "Mute audio" menu item through Accessibility, then presses
+/// "Unmute audio" on release — but only if this service did the muting.
 @MainActor
 final class ZoomMuteService {
     static let shared = ZoomMuteService()
@@ -16,7 +16,7 @@ final class ZoomMuteService {
         guard enabled else { return }
         self.enqueue { [weak self] in
             guard let self, !(await self.weMuted) else { return }
-            if Self.press(title: "Mute Audio") {
+            if Self.press(title: "Mute audio") {
                 await MainActor.run { self.weMuted = true }
                 DebugLogger.shared.info("ZOOM_MUTE muted", source: "ZoomMuteService")
             }
@@ -27,7 +27,7 @@ final class ZoomMuteService {
         self.enqueue { [weak self] in
             guard let self, await self.weMuted else { return }
             await MainActor.run { self.weMuted = false }
-            _ = Self.press(title: "Unmute Audio")
+            _ = Self.press(title: "Unmute audio")
             DebugLogger.shared.info("ZOOM_MUTE unmuted", source: "ZoomMuteService")
         }
     }
@@ -52,7 +52,7 @@ final class ZoomMuteService {
         for top in children(menuBar) {
             for menu in children(top) {
                 for item in children(menu) {
-                    if attribute(item, kAXTitleAttribute) as? String == title {
+                    if (attribute(item, kAXTitleAttribute) as? String)?.caseInsensitiveCompare(title) == .orderedSame {
                         return AXUIElementPerformAction(item, kAXPressAction as CFString) == .success
                     }
                 }
